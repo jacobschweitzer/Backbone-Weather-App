@@ -1,3 +1,12 @@
+function getWeather( cityName ) {
+	var weatherJSONURL = 'http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&APPID=dd7d48fd09e12f23858df736aea1b728';
+	return $.ajax({
+  		method: "GET",
+  		url: weatherJSONURL,
+  		dataType: 'JSON',
+  	});
+}
+
 var weatherItem = Backbone.Model.extend({
 	defaults: function(){
 		return {
@@ -40,18 +49,13 @@ var weatherView = Backbone.View.extend({
 	render: function(){
 		var modelJSON = this.model.toJSON();
 		var currentCity = modelJSON.currentCity;
-		var weatherJSONURL = 'http://api.openweathermap.org/data/2.5/weather?q=' + currentCity + '&units=metric&APPID=dd7d48fd09e12f23858df736aea1b728';
+		var currentCityWeatherData = getWeather( currentCity );
 		var self = this;
-		var weatherData = $.ajax({
-		method: "GET",
-		url: weatherJSONURL,
-		dataType: 'JSON',
-	});
-	weatherData.done( function( data ) {
-		$('#weatherapp').append( self.template( data ) );
-		return self;
-	});   
-	return this;
+		currentCityWeatherData.success( function( data ) { 
+			$('#weatherapp').append( self.template( data ) );
+			return self;
+		});
+		return this;
   },
 });
 
@@ -107,14 +111,8 @@ var addWeatherCity = Backbone.View.extend({
 	this.weatherCities.add( city );
 	city.save();
 
-	// Add the new city to the table
-	var weatherJSONURL = 'http://api.openweathermap.org/data/2.5/weather?q=' + cityName + '&units=metric&APPID=dd7d48fd09e12f23858df736aea1b728';
-	var weatherData = $.ajax({
-  		method: "GET",
-  		url: weatherJSONURL,
-  		dataType: 'JSON',
-  	});
-	weatherData.done( function( data ) {
+	var currentCityWeatherData = getWeather( cityName );
+	currentCityWeatherData.success( function( data ) {
 		var weatherViewCall = new weatherView;
 		$('#weatherapp').append( weatherViewCall.template( data ) );
 	});
